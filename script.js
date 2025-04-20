@@ -1,13 +1,12 @@
 let savedMessages = [];
 let questionQueue = [];
 let currentQuestionIndex = 0;
-let testMode = false;  // <-- Toggle this to true for test mode!
-let score = 0;  // Initialize score variable
-let wrongAnswers = [];  // Array to store links of wrong answers
+let testMode = false;
+let score = 0;
+let wrongAnswers = [];
 
 document.getElementById("modeIndicator").innerText = testMode ? "TEST MODE ACTIVE" : "";
 
-// Add a message to the chat display
 function addMessage(role, message) {
   const responseDiv = document.getElementById("response");
   const msgDiv = document.createElement("div");
@@ -17,7 +16,6 @@ function addMessage(role, message) {
   responseDiv.scrollTop = responseDiv.scrollHeight;
 }
 
-// Fetch questions from the server
 function get_question() {
   if (testMode) {
     addMessage("ai", "Test Mode: Question fetching is disabled.");
@@ -32,7 +30,6 @@ function get_question() {
     .then(response => {
       questionQueue = response.data.evaluation || [];
       currentQuestionIndex = 0;
-
       if (questionQueue.length > 0) {
         showCurrentQuestion();
       } else {
@@ -45,7 +42,6 @@ function get_question() {
     });
 }
 
-// Display the current question one at a time
 function showCurrentQuestion() {
   const item = questionQueue[currentQuestionIndex];
   if (item) {
@@ -55,8 +51,6 @@ function showCurrentQuestion() {
   } else {
     addMessage("ai", "🎉 All questions completed!");
     addMessage("ai", `Your final score is: ${score} out of ${questionQueue.length}`);
-    
-    // Show the links for the questions that were wrong
     if (wrongAnswers.length > 0) {
       addMessage("ai", "Here are some resources to help you learn more about the topics you missed:");
       wrongAnswers.forEach(link => {
@@ -66,7 +60,27 @@ function showCurrentQuestion() {
   }
 }
 
-// Handle user input and send answer
+function SendandSave(message, currentQuestion) {
+  console.log("Sending to question API:", message);
+  return axios.post("https://hackathon-practice2025.onrender.com/api/check/", {
+      question: currentQuestion,
+      answer: message
+    })
+    .then(response => {
+      const result = response.data.evaluation[0];
+      return {
+        c_or_i: result.correct_or_incorrect,
+        link: result.link,
+        answer: result.correct_answer
+      };
+    })
+    .catch(error => {
+      console.error("Error checking answer:", error);
+      addMessage("ai", "⚠ Could not connect to the server.");
+      return { c_or_i: "error", link: null, answer: null };
+    });
+}
+
 function saveAndSend() {
   const inputEl = document.getElementById("input");
   const message = inputEl.value.trim();
@@ -75,53 +89,46 @@ function saveAndSend() {
   savedMessages.push({ role: "user", message });
   addMessage("user", message);
 
-  // If answering a queued question
   if (questionQueue[currentQuestionIndex]) {
     const currentQuestion = questionQueue[currentQuestionIndex];
-    const correctAnswer = currentQuestion.answer;  // Assuming the question object contains the correct answer
-    const questionLink = currentQuestion.link;    // Assuming the question object contains a link to a learning resource
 
-    // Check if the answer is correct
-    if (message.toLowerCase() === correctAnswer.toLowerCase()) {
-      score++;  // Increase the score if the answer is correct
-    } else {
-      // Track the wrong answer and store the link to the question
-      wrongAnswers.push(questionLink);
-    }
-
-    currentQuestionIndex++;
-    if (currentQuestionIndex < questionQueue.length) {
-      showCurrentQuestion();
-    } else {
-      addMessage("ai", "🎉 All questions completed!");
-      addMessage("ai", `Your final score is: ${score} out of ${questionQueue.length}`);
-      
-      // Show the links for the questions that were wrong
-      if (wrongAnswers.length > 0) {
-        addMessage("ai", "Here are some resources to help you learn more about the topics you missed:");
-        wrongAnswers.forEach(link => {
-          addMessage("ai", `🔗 ${link}`);
-        });
+    SendandSave(message, currentQuestion).then(({ c_or_i, link }) => {
+      if (c_or_i === "correct") {
+        score++;
+      } else if (link) {
+        wrongAnswers.push(link);
       }
-    }
+
+      currentQuestionIndex++;
+      if (currentQuestionIndex < questionQueue.length) {
+        showCurrentQuestion();
+      } else {
+        addMessage("ai", "🎉 All questions completed!");
+        addMessage("ai", `Your final score is: ${score} out of ${questionQueue.length}`);
+        if (wrongAnswers.length > 0) {
+          addMessage("ai", "Here are some resources to help you learn more about the topics you missed:");
+          wrongAnswers.forEach(link => {
+            addMessage("ai", `🔗 ${link}`);
+          });
+        }
+      }
+    });
   } else {
-    // Fallback normal chat behavior
     axios.post("https://hackathon-practice2025.onrender.com/api/question/", { question: message })
       .then(response => {
-        const aiResponse = response.data.answer;
+        const aiResponse = response.data.response;
         addMessage("ai", aiResponse);
         savedMessages.push({ role: "ai", message: aiResponse });
       })
       .catch(error => {
         console.error("Error sending message:", error);
-        addMessage("ai", "⚠️ Could not connect to the server.");
+        addMessage("ai", "⚠ Could not connect to the server.");
       });
   }
 
   inputEl.value = "";
 }
 
-// Handle ENTER key for chat input
 document.getElementById("input").addEventListener("keydown", function (event) {
   if (event.key === "Enter") {
     event.preventDefault();
@@ -129,7 +136,6 @@ document.getElementById("input").addEventListener("keydown", function (event) {
   }
 });
 
-// Handle popup form submission
 document.getElementById("infoForm").addEventListener("submit", function (e) {
   e.preventDefault();
 
@@ -146,74 +152,6 @@ document.getElementById("infoForm").addEventListener("submit", function (e) {
       message: `User Info - Grade: ${grade}, Location: ${location}, Subject: ${subject}`
     });
 
-    get_question();  // Auto start question cycle
+    get_question();
   }
 });
-
-
-
-// ----------------- Pomodoro Timer -----------------
-let minutes = 25;
-let seconds = 0;
-let timerInterval;
-let isRunning = false;
-let onBreak = false;  // true when in break mode
-
-function updateDisplay() {
-  const display = document.getElementById("timer");
-  display.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-}
-
-function startTimer() {
-  if (isRunning) return;
-
-  isRunning = true;
-  timerInterval = setInterval(() => {
-    if (seconds === 0) {
-      if (minutes === 0) {
-        clearInterval(timerInterval);
-        isRunning = false;
-
-        if (!onBreak) {
-          // Switch to break
-          onBreak = true;
-          minutes = 5;
-          seconds = 0;
-          alert("Pomodoro complete! Take a 5-minute break.");
-          updateDisplay();
-          startTimer(); // Auto-start break
-        } else {
-          // Switch back to Pomodoro
-          onBreak = false;
-          minutes = 25;
-          seconds = 0;
-          alert("Break over! Time to focus again.");
-          updateDisplay();
-          startTimer(); // Auto-start Pomodoro
-        }
-        return;
-      }
-      minutes--;
-      seconds = 59;
-    } else {
-      seconds--;
-    }
-    updateDisplay();
-  }, 1000);
-}
-
-function pauseTimer() {
-  clearInterval(timerInterval);
-  isRunning = false;
-}
-
-function resetTimer() {
-  clearInterval(timerInterval);
-  isRunning = false;
-  onBreak = false;
-  minutes = 25;
-  seconds = 0;
-  updateDisplay();
-}
-
-updateDisplay();  // Show initial 25:00 on load

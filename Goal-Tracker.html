@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Goal Achievements</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <nav>
+        <header>
+          <a href="AI-TUTOR.html"><img class="logo" src="download.png" alt="logo"></a>
+          <ul class="nav_links">
+            <li><a href="AI-TUTOR.html">AI Tutor</a></li>
+            <li><a href="Timer.html">Pomodoro</a></li>
+            <li><a href="Goal-Tracker.html">Goal Tracker</a></li>
+          </ul>
+          <ul class="cta">
+            <li><a href="mailto:kushdesai221@gmail.com" target="_blank">Email</a></li>
+            <li><a href="tel:+1(234)-567-8901" target="_blank">Phone</a></li>
+            <li><a href="https://github.com/ZakariaRiahi-Dev/HackathonApril2025" target="_blank">Github</a></li>
+            <li><a href="https://devpost.com/zakaria-riahi-2012?ref_content=user-portfolio&ref_feature=portfolio&ref_medium=global-nav" target="_blank">Devpost</a></li>
+          </ul>
+        </header>
+      </nav>    
+<main class="GoalTrackerContainer">
+  <header class="GoalTrackerHeader">
+    🎯 Goal Achievements Tracker
+  </header>
+
+  <div class="goal-container">
+    <h2>Set Your Learning Goals</h2>
+    <input type="text" id="goalInput" placeholder="E.g. Finish math homework" />
+    <button id="addGoalBtn">Add Goal</button>
+
+    <ul id="goalList"></ul>
+  </div>
+</main>
+
+<main class="GoalTrackerContainer">
+    <h3>Leaderboard (Completed Goals)</h3>
+    <ul id="leaderboardList"></ul>
+</main>
+
+<script>
+    const goalInput = document.getElementById('goalInput');
+    const addGoalBtn = document.getElementById('addGoalBtn');
+    const goalList = document.getElementById('goalList');
+    const leaderboardList = document.getElementById('leaderboardList');
+  
+    function addGoal() {
+      const goalText = goalInput.value.trim();
+      if (!goalText) return;
+  
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <span>${goalText}</span>
+        <div>
+          <button class="complete-btn">✔</button>
+          <button class="delete-btn">🗑</button>
+        </div>
+      `;
+  
+      // ✔ Done button functionality
+      li.querySelector('.complete-btn').addEventListener('click', () => {
+        li.classList.add('completed');
+        moveToLeaderboard(goalText);
+        li.remove();
+      });
+  
+      // 🗑 Delete button functionality
+      li.querySelector('.delete-btn').addEventListener('click', () => {
+        li.remove();
+      });
+  
+      goalList.appendChild(li);
+      goalInput.value = '';
+    }
+  
+    function moveToLeaderboard(goalText) {
+      const doneLi = document.createElement('li');
+      doneLi.textContent = goalText;
+      leaderboardList.appendChild(doneLi);
+    }
+  
+    addGoalBtn.addEventListener('click', addGoal);
+  
+    goalInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        addGoal();
+      }
+    });
+  </script>  
+</body>
+</html>

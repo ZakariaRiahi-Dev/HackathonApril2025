@@ -17,8 +17,10 @@
         <label for="grade">Grade:</label>
         <input type="number" id="grade" name="grade" required />
 
+
         <label for="location">Location:</label>
         <input type="text" id="location" name="location" required />
+
 
         <label for="subject">Subject:</label>
         <select id="subject" name="subject" class="subject" required>
@@ -32,28 +34,25 @@
           <option value="french">French</option>
           <option value="other">Other</option>
         </select>
-
-        <button type="submit">Continue</button>
+        <button type="submit" class="submit">Continue</button>
       </form>
     </div>
   </div>
 
   <nav>
     <header>
-      <img class="logo" src="download.png" alt="logo">
+      <a href="AI-TUTOR.html"><img class="logo" src="download.png" alt="logo"></a>
       <ul class="nav_links">
-        <li><a href="/tutor">AI Tutor</a></li>
-        <li><a href="#">Pomodoro</a></li>
-        <li><a href="#">About The Project</a></li>
-        <li><a href="#">Goal Tracker</a></li>
+        <li><a href="AI-TUTOR.html">AI Tutor</a></li>
+        <li><a href="Timer.html">Timer</a></li>
+        <li><a href="Goal-Tracker.html">Goal Tracker</a></li>
       </ul>
-      <select class="cta">
-        <option value="contact">Contact</option>
-        <option value="email">Email</option>
-        <option value="phone">Phone</option>
-        <option value="chat">GitHub</option>
-        <option value="video">Devpost</option>
-      </select>
+      <ul class="cta">
+        <li><a href="mailto:kushdesai221@gmail.com" target="_blank">Email</a></li>
+        <li><a href="tel:+1(234)-567-8901" target="_blank">Phone</a></li>
+        <li><a href="https://github.com/ZakariaRiahi-Dev/HackathonApril2025" target="_blank">Github</a></li>
+        <li><a href="https://devpost.com/zakaria-riahi-2012?ref_content=user-portfolio&ref_feature=portfolio&ref_medium=global-nav" target="_blank">Devpost</a></li>
+      </ul>      
     </header>
   </nav>
 
@@ -69,24 +68,6 @@
       </div>
     </div>
   </main>  
-
-  <!-- Pomodoro Timer App -->
-  <div id="pomodoro-app">
-    <h3>Pomodoro Timer</h3>
-    <div id="timer">25:00</div>
-    <button class="promodoro-btn" onclick="startTimer()">Start</button>
-    <button class="promodoro-btn" onclick="pauseTimer()">Pause</button>
-    <button class="promodoro-btn" onclick="resetTimer()">Reset</button>
-  </div>
-  <hr class="divider">
-  <div id="goal-tracker">
-    <h3>🎯 Daily Goal Tracker</h3>
-    <ul id="goalList">
-      <li><input type="checkbox" data-goal="1"> Finish 3 Pomodoro Sessions</li>
-      <li><input type="checkbox" data-goal="2"> Complete 2 Practice Questions</li>
-      <li><input type="checkbox" data-goal="3"> Read 10 Pages</li>
-    </ul>
-  </div>  
   <script src="script.js"></script>
 </body>
 </html>

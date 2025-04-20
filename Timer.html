@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+  <title>60 Minute Timer</title>
+</head>
+<body>
+  <nav>
+    <header>
+      <a href="index.html"><img class="logo" src="download.png" alt="logo"></a>
+      <ul class="nav_links">
+        <li><a href="index.html">AI Tutor</a></li>
+        <li><a href="Timer.html">Pomodoro</a></li>
+        <li><a href="Goal-Tracker.html">Goal Tracker</a></li>
+      </ul>
+      <ul class="cta">
+        <li><a href="mailto:kushdesai221@gmail.com" target="_blank">Email</a></li>
+        <li><a href="tel:+1(234)-567-8901" target="_blank">Phone</a></li>
+        <li><a href="https://github.com/ZakariaRiahi-Dev/HackathonApril2025" target="_blank">Github</a></li>
+        <li><a href="https://devpost.com/zakaria-riahi-2012?ref_content=user-portfolio&ref_feature=portfolio&ref_medium=global-nav" target="_blank">Devpost</a></li>
+      </ul>
+    </header>
+  </nav>
+  <main class="timer-container">
+    <div class="timer-section">
+        <h2>60 Minute Timer</h2>
+        <div id="timer">60:00</div>
+        <button onclick="startTimer()">Start</button>
+        <button onclick="pauseTimer()">Pause</button>
+        <button onclick="resetTimer()">Reset</button>
+    </div>
+  </main>  
+
+    <script>
+      // Timer Variables
+      let timer;
+      let isRunning = false;
+      let timeLeft = 60 * 60; // 60 minutes
+
+      // Function to update the display
+      function updateTimerDisplay() {
+        const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+        const seconds = (timeLeft % 60).toString().padStart(2, '0');
+        const timerEl = document.getElementById("timer");
+        if (timerEl) timerEl.textContent = `${minutes}:${seconds}`;
+      }
+
+      // Start Timer Function
+      function startTimer() {
+        if (isRunning) return; // Prevent starting multiple timers
+        isRunning = true;
+
+        timer = setInterval(() => {
+          if (timeLeft > 0) {
+            timeLeft--;
+            updateTimerDisplay();
+          } else {
+            clearInterval(timer);
+            isRunning = false;
+            alert("⏰ Time's up!");
+          }
+        }, 1000);
+      }
+
+      // Pause Timer Function
+      function pauseTimer() {
+        clearInterval(timer);
+        isRunning = false;
+      }
+
+      // Reset Timer Function
+      function resetTimer() {
+        clearInterval(timer);
+        isRunning = false;
+        timeLeft = 60 * 60; // Reset to 60 minutes
+        updateTimerDisplay();
+      }
+
+      // Initialize the display when page loads
+      document.addEventListener("DOMContentLoaded", updateTimerDisplay);
+    </script>
+</body>
+</html>

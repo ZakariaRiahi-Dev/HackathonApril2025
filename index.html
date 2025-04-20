@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ethical AI Chat</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <div id="popup" class="popup-overlay">
+    <div class="popup">
+      <h2>Before You Start</h2>
+      <form id="infoForm">
+        <label for="grade">Grade:</label>
+        <input type="number" id="grade" name="grade" required />
+
+
+        <label for="location">Location:</label>
+        <input type="text" id="location" name="location" required />
+
+
+        <label for="subject">Subject:</label>
+        <select id="subject" name="subject" class="subject" required>
+          <option value="" disabled selected>Select subject</option>
+          <option value="math">Math</option>
+          <option value="science">Science</option>
+          <option value="english">English</option>
+          <option value="history">History</option>
+          <option value="geography">Geography</option>
+          <option value="computer-science">Computer Science</option>
+          <option value="french">French</option>
+          <option value="other">Other</option>
+        </select>
+        <button type="submit" class="submit">Continue</button>
+      </form>
+    </div>
+  </div>
+
+  <nav>
+    <header>
+      <a href="index.html"><img class="logo" src="download.png" alt="logo"></a>
+      <ul class="nav_links">
+        <li><a href="index.html">AI Tutor</a></li>
+        <li><a href="Timer.html">Timer</a></li>
+        <li><a href="Goal-Tracker.html">Goal Tracker</a></li>
+      </ul>
+      <ul class="cta">
+        <li><a href="mailto:kushdesai221@gmail.com" target="_blank">Email</a></li>
+        <li><a href="tel:+1(234)-567-8901" target="_blank">Phone</a></li>
+        <li><a href="https://github.com/ZakariaRiahi-Dev/HackathonApril2025" target="_blank">Github</a></li>
+        <li><a href="https://devpost.com/zakaria-riahi-2012?ref_content=user-portfolio&ref_feature=portfolio&ref_medium=global-nav" target="_blank">Devpost</a></li>
+      </ul>      
+    </header>
+  </nav>
+
+  <main class>
+    <div class="chat-container">
+      <div id="response" class="chat-box"></div>
+  
+      <div class="chat-input" id="chatInputContainer" style="display: none;">
+        <input type="text" id="input" class="input" placeholder="Start Chatting for Brilliant Ideas!" />
+        <button id="send" class="send" onclick="saveAndSend()">Send</button>
+        <div id="modeIndicator" style="text-align:center; color:red; font-weight:bold;"></div>
+
+      </div>
+    </div>
+  </main>  
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,6 +1,13 @@
 let savedMessages = [];
+let questionQueue = [];
+let currentQuestionIndex = 0;
+let testMode = false;  // <-- Toggle this to true for test mode!
+let score = 0;  // Initialize score variable
+let wrongAnswers = [];  // Array to store links of wrong answers
 
-// Add a message to the chat
+document.getElementById("modeIndicator").innerText = testMode ? "TEST MODE ACTIVE" : "";
+
+// Add a message to the chat display
 function addMessage(role, message) {
   const responseDiv = document.getElementById("response");
   const msgDiv = document.createElement("div");
@@ -10,38 +17,56 @@ function addMessage(role, message) {
   responseDiv.scrollTop = responseDiv.scrollHeight;
 }
 
-// Fetch question from the server
+// Fetch questions from the server
 function get_question() {
-    const grade = document.getElementById("grade").value.trim();
-    const location = document.getElementById("location").value.trim();
-    const subject = document.getElementById("subject").value.trim();
-  
-    axios.post("https://hackathon-practice2025.onrender.com/api/generate/", {
-      grade,
-      location,
-      subject
-    })
-      .then(response => {
-        const questions = response.data.evaluation;
-  
-        if (Array.isArray(questions)) {
-          const formatted = questions.map(item => {
-            return `${item.instructions}\n${item.question}`;
-          }).join("\n\n");
-  
-          addMessage("ai", formatted);
-          savedMessages.push({ role: "ai", message: formatted });
-        } else {
-          addMessage("ai", "⚠ Unexpected response format.");
-        }
-      })
-      .catch(error => {
-        console.error("Error fetching question:", error);
-        addMessage("ai", "⚠ Could not connect to the server.");
-      });
+  if (testMode) {
+    addMessage("ai", "Test Mode: Question fetching is disabled.");
+    return;
   }
 
-// Handle user input and send question
+  const grade = document.getElementById("grade").value.trim();
+  const location = document.getElementById("location").value.trim();
+  const subject = document.getElementById("subject").value.trim();
+
+  axios.post("https://hackathon-practice2025.onrender.com/api/generate/", { grade, location, subject })
+    .then(response => {
+      questionQueue = response.data.evaluation || [];
+      currentQuestionIndex = 0;
+
+      if (questionQueue.length > 0) {
+        showCurrentQuestion();
+      } else {
+        addMessage("ai", "⚠ No questions received.");
+      }
+    })
+    .catch(error => {
+      console.error("Error fetching question:", error);
+      addMessage("ai", "⚠ Could not connect to the server.");
+    });
+}
+
+// Display the current question one at a time
+function showCurrentQuestion() {
+  const item = questionQueue[currentQuestionIndex];
+  if (item) {
+    const formatted = `📌 ${item.instructions}\n❓ ${item.question}`;
+    addMessage("ai", formatted);
+    savedMessages.push({ role: "ai", message: formatted });
+  } else {
+    addMessage("ai", "🎉 All questions completed!");
+    addMessage("ai", `Your final score is: ${score} out of ${questionQueue.length}`);
+    
+    // Show the links for the questions that were wrong
+    if (wrongAnswers.length > 0) {
+      addMessage("ai", "Here are some resources to help you learn more about the topics you missed:");
+      wrongAnswers.forEach(link => {
+        addMessage("ai", `🔗 ${link}`);
+      });
+    }
+  }
+}
+
+// Handle user input and send answer
 function saveAndSend() {
   const inputEl = document.getElementById("input");
   const message = inputEl.value.trim();
@@ -50,21 +75,53 @@ function saveAndSend() {
   savedMessages.push({ role: "user", message });
   addMessage("user", message);
 
-  axios.post("https://hackathon-practice2025.onrender.com/api/question/", { question: message })
-    .then(response => {
-      const aiResponse = response.data.answer;
-      addMessage("ai", aiResponse);
-      savedMessages.push({ role: "ai", message: aiResponse });
-    })
-    .catch(error => {
-      console.error("Error sending message:", error);
-      addMessage("ai", "⚠️ Could not connect to the server.");
-    });
+  // If answering a queued question
+  if (questionQueue[currentQuestionIndex]) {
+    const currentQuestion = questionQueue[currentQuestionIndex];
+    const correctAnswer = currentQuestion.answer;  // Assuming the question object contains the correct answer
+    const questionLink = currentQuestion.link;    // Assuming the question object contains a link to a learning resource
+
+    // Check if the answer is correct
+    if (message.toLowerCase() === correctAnswer.toLowerCase()) {
+      score++;  // Increase the score if the answer is correct
+    } else {
+      // Track the wrong answer and store the link to the question
+      wrongAnswers.push(questionLink);
+    }
+
+    currentQuestionIndex++;
+    if (currentQuestionIndex < questionQueue.length) {
+      showCurrentQuestion();
+    } else {
+      addMessage("ai", "🎉 All questions completed!");
+      addMessage("ai", `Your final score is: ${score} out of ${questionQueue.length}`);
+      
+      // Show the links for the questions that were wrong
+      if (wrongAnswers.length > 0) {
+        addMessage("ai", "Here are some resources to help you learn more about the topics you missed:");
+        wrongAnswers.forEach(link => {
+          addMessage("ai", `🔗 ${link}`);
+        });
+      }
+    }
+  } else {
+    // Fallback normal chat behavior
+    axios.post("https://hackathon-practice2025.onrender.com/api/question/", { question: message })
+      .then(response => {
+        const aiResponse = response.data.answer;
+        addMessage("ai", aiResponse);
+        savedMessages.push({ role: "ai", message: aiResponse });
+      })
+      .catch(error => {
+        console.error("Error sending message:", error);
+        addMessage("ai", "⚠️ Could not connect to the server.");
+      });
+  }
 
   inputEl.value = "";
 }
 
-// Handle enter key for sending
+// Handle ENTER key for chat input
 document.getElementById("input").addEventListener("keydown", function (event) {
   if (event.key === "Enter") {
     event.preventDefault();
@@ -75,6 +132,7 @@ document.getElementById("input").addEventListener("keydown", function (event) {
 // Handle popup form submission
 document.getElementById("infoForm").addEventListener("submit", function (e) {
   e.preventDefault();
+
   const grade = document.getElementById("grade").value.trim();
   const location = document.getElementById("location").value.trim();
   const subject = document.getElementById("subject").value.trim();
@@ -88,9 +146,10 @@ document.getElementById("infoForm").addEventListener("submit", function (e) {
       message: `User Info - Grade: ${grade}, Location: ${location}, Subject: ${subject}`
     });
 
-    get_question(); // Optional: auto-get question after form
+    get_question();  // Auto start question cycle
   }
 });
+
 
 
 // ----------------- Pomodoro Timer -----------------
@@ -98,6 +157,7 @@ let minutes = 25;
 let seconds = 0;
 let timerInterval;
 let isRunning = false;
+let onBreak = false;  // true when in break mode
 
 function updateDisplay() {
   const display = document.getElementById("timer");
@@ -105,14 +165,32 @@ function updateDisplay() {
 }
 
 function startTimer() {
-  if (isRunning) return; // Prevent multiple intervals
+  if (isRunning) return;
+
   isRunning = true;
   timerInterval = setInterval(() => {
     if (seconds === 0) {
       if (minutes === 0) {
         clearInterval(timerInterval);
         isRunning = false;
-        alert("Pomodoro finished! Take a break.");
+
+        if (!onBreak) {
+          // Switch to break
+          onBreak = true;
+          minutes = 5;
+          seconds = 0;
+          alert("Pomodoro complete! Take a 5-minute break.");
+          updateDisplay();
+          startTimer(); // Auto-start break
+        } else {
+          // Switch back to Pomodoro
+          onBreak = false;
+          minutes = 25;
+          seconds = 0;
+          alert("Break over! Time to focus again.");
+          updateDisplay();
+          startTimer(); // Auto-start Pomodoro
+        }
         return;
       }
       minutes--;
@@ -132,9 +210,10 @@ function pauseTimer() {
 function resetTimer() {
   clearInterval(timerInterval);
   isRunning = false;
+  onBreak = false;
   minutes = 25;
   seconds = 0;
   updateDisplay();
 }
 
-updateDisplay(); // Initial call
+updateDisplay();  // Show initial 25:00 on load

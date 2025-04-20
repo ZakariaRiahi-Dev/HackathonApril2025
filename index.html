@@ -57,14 +57,18 @@
     </header>
   </nav>
 
-  <main>
-    <div id="response" class="chat-box"></div>
+  <main class>
+    <div class="chat-container">
+      <div id="response" class="chat-box"></div>
+  
+      <div class="chat-input" id="chatInputContainer" style="display: none;">
+        <input type="text" id="input" class="input" placeholder="Start Chatting for Brilliant Ideas!" />
+        <button id="send" class="send" onclick="saveAndSend()">Send</button>
+        <div id="modeIndicator" style="text-align:center; color:red; font-weight:bold;"></div>
 
-    <div class="chat-input" id="chatInputContainer" style="display: none;">
-      <input type="text" id="input" class="input" placeholder="Start Chatting for Brilliant Ideas!" />
-      <button id="send" class="send" onclick="saveAndSend()">Send</button>
+      </div>
     </div>
-  </main>
+  </main>  
 
   <!-- Pomodoro Timer App -->
   <div id="pomodoro-app">
@@ -74,7 +78,15 @@
     <button class="promodoro-btn" onclick="pauseTimer()">Pause</button>
     <button class="promodoro-btn" onclick="resetTimer()">Reset</button>
   </div>
-
+  <hr class="divider">
+  <div id="goal-tracker">
+    <h3>🎯 Daily Goal Tracker</h3>
+    <ul id="goalList">
+      <li><input type="checkbox" data-goal="1"> Finish 3 Pomodoro Sessions</li>
+      <li><input type="checkbox" data-goal="2"> Complete 2 Practice Questions</li>
+      <li><input type="checkbox" data-goal="3"> Read 10 Pages</li>
+    </ul>
+  </div>  
   <script src="script.js"></script>
 </body>
 </html>
